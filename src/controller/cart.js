@@ -39,8 +39,12 @@ export const getCartByUserId = async (req, res) => {
 };
 
 // ADD ITEM TO CART
+// ADD ITEM TO CART
 export const addToCart = async (req, res) => {
+
     try {
+
+        console.log("STEP 1");
 
         const {
             userId,
@@ -51,17 +55,44 @@ export const addToCart = async (req, res) => {
             quantity
         } = req.body;
 
+        // VALIDATION
+        if (
+            !userId ||
+            !productId ||
+            !productName ||
+            !price ||
+            !quantity
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Required fields are missing"
+            });
+        }
+
+        console.log("STEP 2");
+
+        const parsedPrice = Number(price);
+        const parsedQuantity = Number(quantity);
+
         let cart = await Cart.findOne({
             userId,
             isActive: true
         });
 
+        console.log("STEP 3");
+
         // CREATE CART IF NOT EXISTS
         if (!cart) {
 
             cart = await Cart.create({
-                userId
+                userId,
+                totalItems: 0,
+                totalPrice: 0,
+                isActive: true
             });
+
+            console.log("STEP 4");
         }
 
         let cartItem = await CartItem.findOne({
@@ -69,13 +100,19 @@ export const addToCart = async (req, res) => {
             productId
         });
 
+        console.log("STEP 5");
+
         // IF ITEM EXISTS
         if (cartItem) {
 
-            cartItem.quantity += quantity;
-            cartItem.subtotal = cartItem.quantity * cartItem.price;
+            cartItem.quantity += parsedQuantity;
+
+            cartItem.subtotal =
+                cartItem.quantity * cartItem.price;
 
             await cartItem.save();
+
+            console.log("STEP 6");
 
         } else {
 
@@ -84,16 +121,21 @@ export const addToCart = async (req, res) => {
                 productId,
                 productName,
                 productImage,
-                price,
-                quantity,
-                subtotal: price * quantity
+                price: parsedPrice,
+                quantity: parsedQuantity,
+                subtotal:
+                    parsedPrice * parsedQuantity
             });
+
+            console.log("STEP 7");
         }
 
         // RECALCULATE CART
         const cartItems = await CartItem.find({
             cartId: cart._id
         });
+
+        console.log("STEP 8");
 
         const totalItems = cartItems.reduce(
             (acc, item) => acc + item.quantity,
@@ -110,13 +152,18 @@ export const addToCart = async (req, res) => {
 
         await cart.save();
 
+        console.log("STEP 9");
+
         return res.status(200).json({
             success: true,
             message: "Item added to cart successfully",
-            cart
+            cart,
+            cartItem
         });
 
     } catch (error) {
+
+        console.error(error);
 
         return res.status(500).json({
             success: false,

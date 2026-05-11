@@ -7,8 +7,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
   credentials: true}));
-app.options('', cors());
-app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // for form
 app.use("/uploads", express.static("uploads"));
 
