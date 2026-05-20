@@ -181,7 +181,7 @@ export const updateCartItem = async (req, res) => {
         const { itemId } = req.params;
         const { quantity } = req.body;
 
-        const cartItem = await CartItem.findById(itemId);
+        const cartItem = await CartItem.findOne({ productId: itemId });
 
         if (!cartItem) {
 
@@ -237,7 +237,7 @@ export const removeCartItem = async (req, res) => {
 
         const { itemId } = req.params;
 
-        const cartItem = await CartItem.findById(itemId);
+        const cartItem = await CartItem.findOne({ productId: itemId });
 
         if (!cartItem) {
 
@@ -249,7 +249,7 @@ export const removeCartItem = async (req, res) => {
 
         const cartId = cartItem.cartId;
 
-        await CartItem.findByIdAndDelete(itemId);
+        await CartItem.findOneAndDelete({ productId: itemId });
 
         // UPDATE CART TOTALS
         const cartItems = await CartItem.find({
